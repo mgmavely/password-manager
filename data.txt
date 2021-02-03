@@ -1,7 +1,0 @@
-google | sample@email.com | swag
-amazon | sample@email.com | 123swag!
-netlify | sample@email.com | laksjdflkadsjf2134
-nyoho sites | sample@email.com | qwery123
-swag | sample@email.com | 
-Amazon | sample@email.com | yadayada123
-Lootcrate | sample@email.com | Nyohoore

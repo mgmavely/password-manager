@@ -2,9 +2,28 @@ from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
 import pyperclip
+import json
+
+# ---------------------------------- SEARCH ------------------------------------- #
+def search():
+    entry = website_entry.get()
+    try:
+        with open("data.json") as f:
+            data = json.load(f)
+            email = data[entry]["email"]
+            password = data[entry]["password"]
+            pyperclip.copy(password)
+            messagebox.showinfo(f"{entry}", f"email: {email}\nPassword: {password}\n(Password copied to clipboard)")
+    except KeyError:
+        messagebox.showerror("Error", "The specified website has no information saved")
+    except FileNotFoundError:
+        messagebox.showerror("Error", "No save data detected.  Add some websites before you can use this functionality")
+
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate_password():
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+               'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+               'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
     numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
 
@@ -33,22 +52,34 @@ def generate_password():
     password_entry.delete(0, END)
     password_entry.insert(0, password)
 
+
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save_data():
     return_val = website_entry.get() + " | " + email_entry.get() + " | " + password_entry.get()
+    new_data = {
+        website_entry.get(): {
+            "email": email_entry.get(),
+            "password": password_entry.get()
+        }
+    }
 
     if len(website_entry.get()) == 0 or len(email_entry.get()) == 0 or len(password_entry.get()) == 0:
-        messagebox.showerror(title="Error",message="Please do not leave any field blank")
+        messagebox.showerror(title="Error", message="Please do not leave any field blank")
     else:
-        msg_text = f"These are the details entered:\nEmail: {email_entry.get()}\n" \
-                   f"Password: {password_entry.get()}\nIs it okay to save?"
-        is_okay = messagebox.askokcancel(title=website_entry.get(), message=msg_text)
+        try:
+            with open("data.json", "r") as f:
+                data = json.load(f)
+                data.update(new_data)
+        except FileNotFoundError:
+            with open("data.json", "w") as f:
+                json.dump(new_data, f, indent=4)
+        else:
+            with open("data.json", "w") as f:
+                json.dump(data, f, indent=4)
+        finally:
+            website_entry.delete(0, END)
+            password_entry.delete(0, END)
 
-        if is_okay:
-            with open("data.txt", "a") as f:
-                f.write(return_val+'\n')
-                website_entry.delete(0, END)
-                password_entry.delete(0, END)
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -65,9 +96,12 @@ website = Label()
 website.grid(column=0, row=1)
 website.config(text="Website:")
 
-website_entry = Entry(width=39)
-website_entry.grid(column=1, row=1, columnspan=2)
+website_entry = Entry(width=21)
+website_entry.grid(column=1, row=1)
 website_entry.focus()
+
+website = Button(text="Search", width=14, command=search)
+website.grid(column=2, row=1)
 
 email = Label()
 email.grid(column=0, row=2)
